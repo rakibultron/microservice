@@ -11,3 +11,4 @@ build:
 manifests:
   rawYaml:
     - infra/dev/auth.yaml
+    - infra/dev/ingress.yaml

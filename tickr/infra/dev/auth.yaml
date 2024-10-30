@@ -30,3 +30,22 @@ spec:
             - containerPort: 3000
               name: auth
       restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: default
+spec:
+  selector:
+    app: auth
+  type: ClusterIP
+  ports:
+    - name: auth-cluster-ip
+      protocol: TCP
+      port: 4000
+      targetPort: 4000
+
+---
+
