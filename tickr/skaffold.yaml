@@ -1,0 +1,13 @@
+apiVersion: skaffold/v4beta10
+kind: Config
+metadata:
+  name: tickr
+build:
+  artifacts:
+    - image: tickr/auth
+      context: auth
+      docker:
+        dockerfile: Dockerfile
+manifests:
+  rawYaml:
+    - infra/dev/auth.yaml
