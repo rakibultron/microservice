@@ -11,7 +11,6 @@ app.get("/api/auth/users", async (req: Request, res: Response) => {
 });
 
 app.get("/api/auth", async (req, res) => {
-  console.log(req.query.id);
   res.json({ hello: "Auth service is running on port `${port}`" });
 });
 
