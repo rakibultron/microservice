@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: auth-db-pvc
+    namespace: default
+spec:
+    accessModes:
+        - ReadWriteOnce
+    resources:
+        requests:
+            storage: 1Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: auth-db-deployment
+    namespace: default
+    labels:
+        app: auth-db
+spec:
+    selector:
+        matchLabels:
+            app: auth-db
+    replicas: 1
+    template:
+        metadata:
+            labels:
+                app: auth-db
+        spec:
+            containers:
+                - name: auth-db
+                  image: mongo
+                  ports:
+                      - containerPort: 27017
+                  volumeMounts:
+                      - name: auth-mongodb-data
+                        mountPath: /var/lib/mongo # MongoDB's expected data directory
+                  resources: # Add resource requests and limits
+                      requests:
+                          cpu: "100m" # Minimum CPU requested
+                          memory: "256Mi" # Minimum memory requested
+                      limits:
+                          cpu: "200m" # Maximum CPU allowed
+                          memory: "512Mi" # Maximum memory allowed
+            volumes:
+                - name: auth-mongodb-data
+                  persistentVolumeClaim:
+                      claimName: auth-db-pvc # Reference the PVC created earlier
+            restartPolicy: Always
+
+---
+# https://kubernetes.io/docs/concepts/services-networking/service/
+apiVersion: v1
+kind: Service
+metadata:
+    name: auth-db-cluster-ip
+    namespace: default
+spec:
+    selector:
+        app: auth-db
+    type: ClusterIP
+    ports:
+        - name: auth-db
+          protocol: TCP
+          port: 27017
+          targetPort: 27017
+
+---
+
