@@ -8,15 +8,23 @@ spec:
     accessModes:
         - ReadWriteOnce
     persistentVolumeReclaimPolicy: Retain
-    hostPath:
-        path: "/mnt/data/mongodb"
+    storageClassName: "manual"
+    local:
+        path: "/data/mongodb" # Path in Docker VM or a local directory, depending on your setup
+    nodeAffinity:
+        required:
+            nodeSelectorTerms:
+                - matchExpressions:
+                      - key: kubernetes.io/hostname
+                        operator: In
+                        values:
+                            - docker-desktop # Or adjust to match your node
 
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
     name: auth-mongo-pvc
-    # Specify a valid namespace if needed; removing here to use the default namespace
 spec:
     accessModes:
         - ReadWriteOnce
