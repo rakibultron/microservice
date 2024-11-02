@@ -1,8 +1,22 @@
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+    name: auth-mongo-pv
+spec:
+    capacity:
+        storage: 1Gi
+    accessModes:
+        - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    hostPath:
+        path: "/mnt/data/mongodb"
+
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-    name: auth-db-pvc
-    namespace: default
+    name: auth-mongo-pvc
+    # Specify a valid namespace if needed; removing here to use the default namespace
 spec:
     accessModes:
         - ReadWriteOnce
@@ -33,24 +47,23 @@ spec:
                   image: mongo
                   ports:
                       - containerPort: 27017
-                  volumeMounts:
-                      - name: auth-mongodb-data
-                        mountPath: /var/lib/mongo # MongoDB's expected data directory
-                  resources: # Add resource requests and limits
+                  resources:
                       requests:
-                          cpu: "100m" # Minimum CPU requested
-                          memory: "256Mi" # Minimum memory requested
+                          cpu: "100m"
+                          memory: "256Mi"
                       limits:
-                          cpu: "200m" # Maximum CPU allowed
-                          memory: "512Mi" # Maximum memory allowed
+                          cpu: "200m"
+                          memory: "512Mi"
+                  volumeMounts:
+                      - name: mongodb-data
+                        mountPath: /data/db
             volumes:
-                - name: auth-mongodb-data
+                - name: mongodb-data
                   persistentVolumeClaim:
-                      claimName: auth-db-pvc # Reference the PVC created earlier
+                      claimName: auth-mongo-pvc
             restartPolicy: Always
 
 ---
-# https://kubernetes.io/docs/concepts/services-networking/service/
 apiVersion: v1
 kind: Service
 metadata:
@@ -65,6 +78,3 @@ spec:
           protocol: TCP
           port: 27017
           targetPort: 27017
-
----
-
