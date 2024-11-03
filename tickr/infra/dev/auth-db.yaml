@@ -64,7 +64,7 @@ spec:
                           memory: "512Mi"
                   volumeMounts:
                       - name: mongodb-data
-                        mountPath: /data/db
+                        mountPath: "/data/db"
             volumes:
                 - name: mongodb-data
                   persistentVolumeClaim:

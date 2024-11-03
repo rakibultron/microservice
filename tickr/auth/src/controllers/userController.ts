@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import User, { IUser } from "../models/userModel";
+import User from "../models/userModel";
 
 // Insert a new user
 export const createUser = async (
@@ -7,8 +7,9 @@ export const createUser = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { name, email } = req.body;
-    const user: IUser = new User({ name, email });
+    const { name, email, role, password } = req.body;
+
+    const user = new User({ name, email, password, role });
     await user.save();
     res.status(201).json(user);
   } catch (error) {
