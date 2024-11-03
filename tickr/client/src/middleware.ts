@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const loggedInRoutes = ["/dashboard"];
-const loggedOutRoutes = ["/auth/login", "/register"];
+const loggedOutRoutes = ["/auth/login", "/auth/register"];
 
 export default async function AuthMiddleware(
   req: NextRequest
@@ -16,7 +16,7 @@ export default async function AuthMiddleware(
     return NextResponse.next();
   }
 
-  const token = true;
+  const token = false;
   // const token = req.cookies.get("token")?.value || null;
 
   if (!token && loggedInRoutes.some((path) => pathname.startsWith(path))) {
@@ -27,7 +27,7 @@ export default async function AuthMiddleware(
     loggedOutRoutes.some((path) => pathname.startsWith(path))
   ) {
     // Redirect to dashboard if authenticated and accessing logged-out routes
-    return NextResponse.redirect(`${req.nextUrl.origin}/dashboard`);
+    return NextResponse.redirect(`${req.nextUrl.origin}`);
   }
 
   return NextResponse.next();
