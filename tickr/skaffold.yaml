@@ -8,8 +8,21 @@ build:
       context: auth
       docker:
         dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: ./auth
+            dest: /etc
+    - image: tickr/client
+      context: auth
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: ./client
+            dest: /etc
 manifests:
   rawYaml:
     - infra/dev/auth.yaml
     - infra/dev/auth-db.yaml
     - infra/dev/ingress.yaml
+    - infra/dev/client.yaml

@@ -1,4 +1,5 @@
-module.exports = {
+const nextConfig = {
+  output: "standalone",
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
@@ -18,3 +19,5 @@ module.exports = {
     ],
   },
 };
+
+module.exports = nextConfig;
