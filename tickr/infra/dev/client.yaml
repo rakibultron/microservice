@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tickr-client-deployment
+  namespace: default
+  labels:
+    app: tickr-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tickr-client
+  template:
+    metadata:
+      labels:
+        app: tickr-client
+    spec:
+      containers:
+        - name: tickr-client
+          image: tickr-client:latest # Replace with your actual Docker image name
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "200m"
+              memory: "512Mi"
+          env:
+            - name: NODE_ENV
+              value: "development" # Set environment variables as needed
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tickr-client-service
+  namespace: default
+spec:
+  selector:
+    app: tickr-client
+  type: NodePort # Change this to LoadBalancer if you are using a cloud provider
+  ports:
+    - name: http
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+      nodePort: 30000 # Change this to a different port if needed
