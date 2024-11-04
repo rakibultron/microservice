@@ -1,11 +1,13 @@
 import express from "express";
 import { Request, Response } from "express";
+import cookieParser from "cookie-parser";
 
 import mongoose from "mongoose";
 
 import userRoutes from "./routes/userRoutes";
 
 const app = express();
+app.use(cookieParser());
 app.use(express.json());
 
 app.use(userRoutes);

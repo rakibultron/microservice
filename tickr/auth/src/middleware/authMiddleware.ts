@@ -3,8 +3,9 @@ import jwt, { Secret, JwtPayload } from "jsonwebtoken";
 
 const JWT_SECRET: Secret = process.env.JWT_SECRET || "shikret"; // Ensure your secret is set properly
 
+// Extend the Express Request interface to include the user property
 interface CustomRequest extends Request {
-  user?: JwtPayload;
+  user?: JwtPayload; // or define your user object type here
 }
 
 // Middleware to authenticate tokens
@@ -13,7 +14,7 @@ export const authenticateToken = (
   res: Response,
   next: NextFunction
 ): Promise<any> | any => {
-  const token = req.cookies.token;
+  const token = req.cookies.token; // Adjust this if your token is stored differently (e.g., in headers)
 
   if (!token) {
     return res
@@ -29,8 +30,8 @@ export const authenticateToken = (
     }
 
     // Attach user information to the request object
-    req.user = decoded;
+    req.user = decoded; // Assuming user has been decoded successfully
 
-    next();
+    next(); // Call next to continue to the next middleware or route handler
   });
 };
