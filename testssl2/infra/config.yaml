@@ -1,0 +1,350 @@
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: tickr-client-deployment
+#   namespace: default
+#   labels:
+#     app: tickr-client
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: tickr-client
+#   template:
+#     metadata:
+#       labels:
+#         app: tickr-client
+#     spec:
+#       containers:
+#         - name: tickr-client
+#           image: tickr-client:latest # Replace with your actual Docker image name
+#           imagePullPolicy: Never
+#           ports:
+#             - containerPort: 80 # Adjust to 80 if Ingress manages SSL
+#           resources:
+#             requests:
+#               cpu: "100m"
+#               memory: "256Mi"
+#             limits:
+#               cpu: "200m"
+#               memory: "512Mi"
+#           env:
+#             - name: NODE_ENV
+#               value: "development"
+#       restartPolicy: Always
+
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: tickr-client-service
+#   namespace: default
+# spec:
+#   selector:
+#     app: tickr-client
+#   type: NodePort
+#   ports:
+#     - name: http
+#       protocol: TCP
+#       port: 80
+#       targetPort: 80
+#       nodePort: 30000
+
+# ---
+# apiVersion: cert-manager.io/v1
+# kind: ClusterIssuer
+# metadata:
+#   name: letsencrypt-prod
+# spec:
+#   acme:
+#     email: mdrakibul.dev@gmail.com
+#     server: https://acme-v02.api.letsencrypt.org/directory
+#     privateKeySecretRef:
+#       name: letsencrypt-secret-prod
+#     solvers:
+#       - http01:
+#           ingress:
+#             class: nginx
+# ---
+# apiVersion: cert-manager.io/v1
+# kind: Certificate
+# metadata:
+#   name: letsencrypt-cert
+#   namespace: default
+# spec:
+#   secretName: letsencrypt-secret-prod # This is where the certificate will be stored
+#   issuerRef:
+#     name: letsencrypt-prod
+#     kind: ClusterIssuer
+#   commonName: togumogu.dev
+#   dnsNames:
+#     - togumogu.dev
+
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: tickr-ingr-service
+#   namespace: default
+#   annotations:
+#     cert-manager.io/cluster-issuer: "letsencrypt-prod"
+#     nginx.ingress.kubernetes.io/ssl-redirect: "true"
+#     nginx.ingress.kubernetes.io/rewrite-target: "/"
+# spec:
+#   tls:
+#     - hosts:
+#         - togumogu.dev
+#       secretName: letsencrypt-secret-prod
+
+#   ingressClassName: nginx
+#   rules:
+#     - host: togumogu.dev
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: tickr-client-service
+#                 port:
+#                   number: 80
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: tickr-client-deployment
+#   namespace: default
+#   labels:
+#     app: tickr-client
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: tickr-client
+#   template:
+#     metadata:
+#       labels:
+#         app: tickr-client
+#     spec:
+#       containers:
+#         - name: tickr-client
+#           image: tickr-client:latest # Replace with your actual Docker image name
+#           imagePullPolicy: Never
+#           ports:
+#             - containerPort: 80
+#           resources:
+#             requests:
+#               cpu: "100m"
+#               memory: "256Mi"
+#             limits:
+#               cpu: "200m"
+#               memory: "512Mi"
+#           env:
+#             - name: NODE_ENV
+#               value: "development"
+#       restartPolicy: Always
+
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: tickr-client-service
+#   namespace: default
+# spec:
+#   selector:
+#     app: tickr-client
+#   type: NodePort
+#   ports:
+#     - name: http
+#       protocol: TCP
+#       port: 80
+#       targetPort: 80
+#       nodePort: 30000
+
+# ---
+# apiVersion: cert-manager.io/v1
+# kind: Issuer
+# metadata:
+#   name: selfsigned-issuer
+# spec:
+#   selfSigned: {}
+# ---
+# apiVersion: cert-manager.io/v1
+# kind: Certificate
+# metadata:
+#   name: tickr-selfsigned-cert
+#   namespace: default
+# spec:
+#   secretName: tickr-selfsigned-tls
+#   duration: 24h
+#   renewBefore: 12h
+#   dnsNames:
+#     - api.tickr.dev
+#     - tickr.dev
+#   issuerRef:
+#     name: selfsigned-issuer
+#     kind: Issuer
+
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: tickr-ingress-service
+#   namespace: default
+#   annotations:
+#     cert-manager.io/cluster-issuer: "selfsigned-issuer"
+#     nginx.ingress.kubernetes.io/ssl-redirect: "true"
+#     nginx.ingress.kubernetes.io/hsts: "true"
+#     nginx.ingress.kubernetes.io/enable-cors: "true"
+#     nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:30000"
+#     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+#     nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization"
+#     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#     - host: api.tickr.dev
+#       http:
+#         paths:
+#           - path: /api/auth
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: auth-service
+#                 port:
+#                   number: 4000
+#     - host: tickr.dev
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: tickr-client-service
+#                 port:
+#                   number: 80
+#   tls:
+#     - hosts:
+#         - api.tickr.dev
+#         - tickr.dev
+#       secretName: tickr-selfsigned-tls # Different secret name for the certificate
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tickr-client-deployment
+  namespace: default
+  labels:
+    app: tickr-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tickr-client
+  template:
+    metadata:
+      labels:
+        app: tickr-client
+    spec:
+      containers:
+        - name: tickr-client
+          image: tickr-client:latest # Replace with your actual Docker image name
+          imagePullPolicy: IfNotPresent # Adjusted to avoid missing image errors
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "200m"
+              memory: "512Mi"
+          env:
+            - name: NODE_ENV
+              value: "development"
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tickr-client-service
+  namespace: default
+spec:
+  selector:
+    app: tickr-client
+  type: NodePort
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30000
+
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tickr-selfsigned-cert
+  namespace: default
+spec:
+  secretName: tickr-selfsigned-tls
+  duration: 24h
+  renewBefore: 12h
+  dnsNames:
+    - api.tickr.dev
+    - tickr.dev
+  issuerRef:
+    name: selfsigned-issuer
+    kind: Issuer
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tickr-ingress-service
+  namespace: default
+  annotations:
+    cert-manager.io/issuer: "selfsigned-issuer"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false" # Disable forced HTTPS
+    nginx.ingress.kubernetes.io/hsts: "false" # Optional: Disable HSTS
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:30000"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: api.tickr.dev
+      http:
+        paths:
+          - path: /api/auth
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-service
+                port:
+                  number: 4000
+    - host: tickr.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tickr-client-service
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - api.tickr.dev
+        - tickr.dev
+      secretName: tickr-selfsigned-tls # Ensure this secret is created by cert-manager
