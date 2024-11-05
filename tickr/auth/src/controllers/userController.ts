@@ -8,9 +8,19 @@ const JWT_SECRET = process.env.JWT_SECRET || "shikret";
 export const register = async (req: Request, res: Response): Promise<any> => {
   const { username, email, password } = req.body;
 
-  // Validate user input
+  // Validate required fields and format-specific validations
   if (!username || !email || !password) {
-    return res.status(400).json({ message: "Please fill all fields." });
+    return res.status(422).json({ message: "All fields are required." });
+  }
+
+  if (!email.match(/^\S+@\S+\.\S+$/)) {
+    return res.status(422).json({ message: "Invalid email format." });
+  }
+
+  if (password.length < 5) {
+    return res
+      .status(422)
+      .json({ message: "Password must be at least 5 characters long." });
   }
 
   try {
@@ -18,8 +28,8 @@ export const register = async (req: Request, res: Response): Promise<any> => {
     const existingUser: userType | null = await User.findOne({ email });
     if (existingUser) {
       return res
-        .status(400)
-        .json({ message: "User already exists.", data: existingUser });
+        .status(409) // 409 for conflict if user already exists
+        .json({ message: "User already exists." });
     }
 
     // Hash the password
@@ -32,10 +42,17 @@ export const register = async (req: Request, res: Response): Promise<any> => {
       password: hashedPassword,
     }).save();
 
-    return res
-      .status(201)
-      .json({ message: "User registered successfully!", data: newUser });
+    // Generate a token for the new user (optional)
+    const token = jwt.sign({ userId: newUser._id }, JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    return res.status(201).json({
+      message: "User registered successfully!",
+      data: { user: newUser, token },
+    });
   } catch (error) {
+    console.error("Registration error:", error); // Log the error for debugging
     return res.status(500).json({ message: "Internal server error." });
   }
 };

@@ -8,18 +8,11 @@ build:
       context: auth
       docker:
         dockerfile: Dockerfile
-      sync:
-        manual:
-          - src: ./auth
-            dest: /etc
     - image: tickr/client
-      context: auth
+      context: client
       docker:
         dockerfile: Dockerfile
-      sync:
-        manual:
-          - src: ./client
-            dest: /etc
+
 manifests:
   rawYaml:
     - infra/dev/auth.yaml

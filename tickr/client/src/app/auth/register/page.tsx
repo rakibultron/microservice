@@ -17,6 +17,7 @@ export default function Page() {
   const { register, handleSubmit } = useForm<FormData>();
 
   interface FormData {
+    username: string;
     email: string;
     password: string;
   }
@@ -37,8 +38,13 @@ export default function Page() {
           <CardContent>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" placeholder="Lee Robinson" required />
+                <Label htmlFor="name">User Name</Label>
+                <Input
+                  id="name"
+                  placeholder="Lee Robinson"
+                  required
+                  {...register("username")}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -54,15 +60,6 @@ export default function Page() {
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
-                  type="password"
-                  required
-                  {...register("password")}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm Password</Label>
-                <Input
-                  id="confirm-password"
                   type="password"
                   required
                   {...register("password")}

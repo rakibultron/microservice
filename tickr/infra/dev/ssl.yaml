@@ -1,0 +1,22 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tickr-selfsigned-cert
+  namespace: default
+spec:
+  secretName: tickr-selfsigned-tls
+  duration: 24h
+  renewBefore: 12h
+  dnsNames:
+    - api.tickr.dev
+    - tickr.dev
+  issuerRef:
+    name: selfsigned-issuer
+    kind: Issuer
