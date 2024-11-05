@@ -1,0 +1,63 @@
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: tickr-ingress-service
+#   namespace: default
+#   annotations:
+#     nginx.ingress.kubernetes.io/ssl-redirect: "false" # Disables SSL redirection
+#     nginx.ingress.kubernetes.io/hsts: "false" # Disables HSTS to prevent enforced HTTPS
+#     nginx.ingress.kubernetes.io/enable-cors: "true" # Enables CORS (set to "true" to make the other CORS settings work)
+#     nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:30000" # Allowed origin for CORS
+#     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS" # Allowed methods
+#     nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization" # Allowed headers
+#     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#     - host: tickr.dev
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: tickr-client-service
+#                 port:
+#                   number: 3000
+#   tls:
+#     - hosts:
+#         - tickr.dev
+#       secretName: tckr
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tickr-ingr-service
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # nginx.ingress.kubernetes.io/hsts: "false"
+    # nginx.ingress.kubernetes.io/enable-cors: "true"
+    # nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:30000"
+    # nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    # nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization"
+    # nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: "/" # Ensures paths are properly redirected
+spec:
+  tls:
+    - hosts:
+        - tickr.dev
+      secretName: tickr-dev-tls
+  ingressClassName: nginx
+  rules:
+    - host: tickr.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tickr-client-service
+                port:
+                  number: 80
+    # Ensure this matches the actual TLS secret in the cluster

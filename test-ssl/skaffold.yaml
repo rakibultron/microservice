@@ -1,0 +1,15 @@
+apiVersion: skaffold/v4beta10
+kind: Config
+metadata:
+  name: test-ssl
+build:
+  artifacts:
+    - image: tickr-client
+      context: nossl
+      docker:
+        dockerfile: Dockerfile
+manifests:
+  rawYaml:
+    - infra/client.yaml
+    - infra/ingress.yaml
+    - infra/ssl.yaml
