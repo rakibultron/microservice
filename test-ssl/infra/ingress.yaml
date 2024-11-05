@@ -35,6 +35,7 @@ metadata:
   name: tickr-ingr-service
   namespace: default
   annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     # nginx.ingress.kubernetes.io/hsts: "false"
     # nginx.ingress.kubernetes.io/enable-cors: "true"
@@ -46,11 +47,12 @@ metadata:
 spec:
   tls:
     - hosts:
-        - tickr.dev
-      secretName: tickr-dev-tls
+        - togumogu.dev
+      secretName: letsencrypt-secret-prod
+
   ingressClassName: nginx
   rules:
-    - host: tickr.dev
+    - host: togumogu.dev
       http:
         paths:
           - path: /
@@ -59,5 +61,12 @@ spec:
               service:
                 name: tickr-client-service
                 port:
-                  number: 80
+                  number: 443
+          - path: /my-dep
+            pathType: Prefix
+            backend:
+              service:
+                name: my-dep
+                port:
+                  number: 8080
     # Ensure this matches the actual TLS secret in the cluster

@@ -13,3 +13,4 @@ manifests:
     - infra/client.yaml
     - infra/ingress.yaml
     - infra/ssl.yaml
+    - infra/configure_cert_manager.yaml
