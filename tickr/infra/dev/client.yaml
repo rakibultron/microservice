@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: tickr-client
-          image: tickr-client:latest # Replace with your actual Docker image name
+          image: tickr/client:latest # Replace with your actual Docker image name
           imagePullPolicy: Never
           ports:
             - containerPort: 3000

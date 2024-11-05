@@ -46,6 +46,7 @@ import axios, { AxiosResponse, AxiosRequestConfig } from "axios";
 // Define the shape of the data being passed to the function
 interface RegisterData {
   email: string;
+  username: string;
   password: string; // Ensure the property name matches the input
 }
 
@@ -54,7 +55,7 @@ const userRegister = async ({
 }: {
   data: RegisterData;
 }): Promise<AxiosResponse> => {
-  const { email, password } = data;
+  const { email, password, username } = data;
 
   // Log the email for debugging purposes (avoid logging sensitive info like password)
   console.log({ email });
@@ -76,6 +77,7 @@ const userRegister = async ({
       "https://api.tickr.dev/api/auth/register",
       //   {},
       {
+        username,
         email,
         password, // Use the correct property name here
       },
